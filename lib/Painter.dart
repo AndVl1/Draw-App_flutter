@@ -28,7 +28,6 @@ class Painter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    log(paths.length.toString());
     for (int i = 0; i < paths.length; i++) {
       canvas.drawPath(paths[i], paints[i]);
     }

@@ -72,7 +72,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void updatePath(Offset offset) {
-    log("update");
     switch (mode) {
       case DrawModes.points:
       case DrawModes.eraser:
@@ -181,7 +180,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                       switch (selectedIndex) {
                                         case 0:
                                           mode = DrawModes.points;
-                                          log(mode.toString());
                                           break;
                                         case 1:
                                           mode = DrawModes.line;
@@ -193,7 +191,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                           mode = DrawModes.eraser;
                                           break;
                                       }
-                                      log(mode.toString());
                                     });
                                   },
                                 )),
