@@ -1,16 +1,13 @@
-# my_first_app
+# Flutter Drawing app
 
-A new Flutter project.
+Flutter drawing app for applying to JB internship.
 
-## Getting Started
+Tested on Android, iOS emulators and in browser.
 
-This project is a starting point for a Flutter application.
+## Screenshots
 
-A few resources to get you started if this is your first Flutter project:
+![android](android.png)
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+![ios](ios.png)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![web](web.png)
