@@ -32,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   double opacity = 1.0;
   StrokeCap strokeType = StrokeCap.round;
-  double strokeWidth = 8.0;
+  double strokeWidth = 1.0;
 
   void changeColor(Color color) => setState(() => currentColor = color);
 
@@ -165,13 +165,15 @@ class _MyHomePageState extends State<MyHomePage> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  Column(
                     children: [
-                      Wrap(
-                        children: List<Widget>.generate(
-                            4,
-                            (index) => ChoiceChip(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Wrap(
+                            children: List<Widget>.generate(
+                                4,
+                                    (index) => ChoiceChip(
                                   label: Text(modes[index]),
                                   selected: selectedIndex == index,
                                   onSelected: (bool selected) {
@@ -194,39 +196,53 @@ class _MyHomePageState extends State<MyHomePage> {
                                     });
                                   },
                                 )),
-                        spacing: 8,
-                      ),
-                      ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    titlePadding: const EdgeInsets.all(0.0),
-                                    contentPadding: const EdgeInsets.all(0.0),
-                                    content: SingleChildScrollView(
-                                      child: ColorPicker(
-                                        pickerColor: currentColor,
-                                        onColorChanged: changeColor,
-                                        colorPickerWidth: 300.0,
-                                        pickerAreaHeightPercent: 0.7,
-                                        enableAlpha: true,
-                                        displayThumbColor: true,
-                                        showLabel: true,
-                                        paletteType: PaletteType.hsv,
-                                        pickerAreaBorderRadius:
+                            spacing: 8,
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        titlePadding: const EdgeInsets.all(0.0),
+                                        contentPadding: const EdgeInsets.all(0.0),
+                                        content: SingleChildScrollView(
+                                          child: ColorPicker(
+                                            pickerColor: currentColor,
+                                            onColorChanged: changeColor,
+                                            colorPickerWidth: 300.0,
+                                            pickerAreaHeightPercent: 0.7,
+                                            enableAlpha: true,
+                                            displayThumbColor: true,
+                                            showLabel: true,
+                                            paletteType: PaletteType.hsv,
+                                            pickerAreaBorderRadius:
                                             const BorderRadius.only(
-                                          topLeft: const Radius.circular(2.0),
-                                          topRight: const Radius.circular(2.0),
+                                              topLeft: const Radius.circular(2.0),
+                                              topRight: const Radius.circular(2.0),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  );
-                                });
-                          },
-                          child: Text("Color")),
+                                      );
+                                    });
+                              },
+                              child: Text("Color")),
+                        ],
+                      ),
+                      Slider(
+                        value: strokeWidth,
+                        min: 1,
+                        max: 15,
+                        label: strokeWidth.round().toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            strokeWidth = value;
+                          });
+                        },
+                      )
                     ],
                   ),
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
