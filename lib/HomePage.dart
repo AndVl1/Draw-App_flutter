@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
@@ -16,19 +18,106 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 0;
-  Color currentColor = Color(0x000000);
-  Color backgroundColor = Color(0xffffff);
+  Color currentColor = Colors.black;
+  Color backgroundColor = Colors.white;
   List<String> modes = ["Draw", "Line", "Rect", "Eraser"];
 
-  List<TouchPoints> points = [];
+  List<Paint> paints = [];
+  List<Path> paths = [];
+  Path latestPath;
+  Paint latestPaint;
+
   DrawModes mode = DrawModes.points;
   Offset startPosition = Offset(0, 0);
 
   double opacity = 1.0;
   StrokeCap strokeType = StrokeCap.round;
-  double strokeWidth = 3.0;
+  double strokeWidth = 8.0;
 
   void changeColor(Color color) => setState(() => currentColor = color);
+
+  void initPaintAndPen(Color color) {
+    latestPaint = getNewPaint(color);
+    latestPath = Path();
+    paints.add(latestPaint);
+    paths.add(latestPath);
+  }
+
+  Paint getNewPaint(Color color) {
+    return Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = strokeType
+      ..isAntiAlias = true
+      ..color = color
+      ..strokeWidth = strokeWidth
+    ;
+  }
+
+  void startPath(Offset offset) {
+    switch (mode) {
+      case DrawModes.points:
+        initPaintAndPen(currentColor);
+        latestPath.moveTo(offset.dx, offset.dy);
+        break;
+      case DrawModes.line:
+      case DrawModes.rect:
+        initPaintAndPen(currentColor);
+        startPosition = offset;
+        break;
+      case DrawModes.eraser:
+        initPaintAndPen(backgroundColor);
+        latestPath.moveTo(offset.dx, offset.dy);
+        break;
+    }
+  }
+
+  void updatePath(Offset offset) {
+    log("update");
+    switch (mode) {
+      case DrawModes.points:
+      case DrawModes.eraser:
+        latestPath.lineTo(offset.dx, offset.dy);
+        break;
+      case DrawModes.line:
+        latestPath = Path();
+        latestPaint = getNewPaint(currentColor);
+        paths.removeLast();
+        paints.removeLast();
+        paths.add(latestPath);
+        paints.add(latestPaint);
+        latestPath.moveTo(startPosition.dx, startPosition.dy);
+        latestPath.lineTo(offset.dx, offset.dy);
+        break;
+      case DrawModes.rect:
+        latestPath = Path();
+        latestPaint = getNewPaint(currentColor);
+        paths.removeLast();
+        paints.removeLast();
+        paths.add(latestPath);
+        paints.add(latestPaint);
+        latestPath.moveTo(startPosition.dx, startPosition.dy);
+        latestPath.lineTo(startPosition.dx, offset.dy);
+        latestPath.lineTo(offset.dx, offset.dy);
+        latestPath.lineTo(offset.dx, startPosition.dy);
+        latestPath.lineTo(startPosition.dx, startPosition.dy);
+        break;
+    }
+  }
+
+  void endPath(Offset offset) {
+    switch (mode) {
+      case DrawModes.points:
+      case DrawModes.eraser:
+        break;
+      case DrawModes.line:
+        initPaintAndPen(currentColor);
+        latestPath?.moveTo(startPosition.dx, startPosition.dy);
+        latestPath?.lineTo(offset.dx, offset.dy);
+        break;
+      case DrawModes.rect:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,48 +138,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: CustomPaint(
                     size: Size.infinite,
                     painter: Painter(
-                      pointsList: points,
-                      mode: mode,
+                      paths: paths,
+                      paints: paints,
+                      latestPath: latestPath,
+                      latestPaint: latestPaint,
                       startPoint: startPosition,
+                      currentColor: currentColor,
                     ),
                   ),
                   onPanStart: (details) {
                     setState(() {
                       RenderBox renderBox = context.findRenderObject();
-                      startPosition = details.localPosition;
-
-                      points.add(TouchPoints(
-                          points:
-                              renderBox.globalToLocal(details.localPosition),
-                          paint: Paint()
-                            ..strokeCap = strokeType
-                            ..isAntiAlias = true
-                            ..color = modes[selectedIndex] == "Eraser"
-                                ? backgroundColor
-                                : currentColor
-                            ..strokeWidth = strokeWidth));
+                      startPath(renderBox.globalToLocal(details.localPosition));
                     });
                   },
                   onPanUpdate: (details) {
                     setState(() {
                       RenderBox renderBox = context.findRenderObject();
-
-                      points.add(TouchPoints(
-                          points:
-                              renderBox.globalToLocal(details.localPosition),
-                          paint: Paint()
-                            ..strokeCap = strokeType
-                            ..isAntiAlias = true
-                            ..color = modes[selectedIndex] == "Eraser"
-                                ? backgroundColor.withOpacity(opacity)
-                                : currentColor.withOpacity(opacity)
-                            ..strokeWidth = strokeWidth));
+                      updatePath(renderBox.localToGlobal(details.localPosition));
                     });
                   },
                   onPanEnd: (details) {
-                    setState(() {
-                      points.add(null);
-                    });
+                    setState(() { });
                   },
                 ),
               ),
@@ -112,6 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       switch (selectedIndex) {
                                         case 0:
                                           mode = DrawModes.points;
+                                          log(mode.toString());
                                           break;
                                         case 1:
                                           mode = DrawModes.line;
@@ -123,6 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           mode = DrawModes.eraser;
                                           break;
                                       }
+                                      log(mode.toString());
                                     });
                                   },
                                 )),
@@ -163,7 +234,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     width: double.infinity,
                     child: ElevatedButton(
                         onPressed: () {
-                          points.clear();
+                          paths.clear();
+                          paints.clear();
                         },
                         child: Text("Clear")),
                   ),
